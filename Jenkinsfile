@@ -1,15 +1,9 @@
-cat > Jenkinsfile << 'EOF'
 pipeline {
     agent any
 
     environment {
         SONARQUBE_ENV = 'SonarQubeServer'
-        DOCKER_IMAGE = 'abk-awk/mon-app'
-    }
-
-    tools {
-        maven 'Maven 3'
-        jdk 'jdk-21'
+        DOCKER_IMAGE = 'abk-awk/devops'
     }
 
     stages {
@@ -57,4 +51,3 @@ pipeline {
         }
     }
 }
-EOF
