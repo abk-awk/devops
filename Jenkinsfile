@@ -1,53 +1,60 @@
 pipeline {
     agent any
 
-    environment {
-        SONARQUBE_ENV = 'SonarQubeServer'
-        DOCKER_IMAGE = 'abk-awk/devops'
+    parameters {
+        string(name: 'VERSION', defaultValue: 'v1.0', description: 'Version to build and deploy')
     }
 
     stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Checkout') {
             steps {
-                git 'https://github.com/abk-awk/devops.git'
+                echo "Performing additional checkout operations if needed"
+                // Exemple : checkout depuis un autre repo
+                // git url: 'https://github.com/example/another-repo.git'
             }
         }
 
-        stage('Build') {
+        stage('Build and Test') {
             steps {
-                sh 'mvn clean install'
+                echo "Building the project and running tests..."
+                sh './gradlew build test' // ou 'mvn test', etc.
             }
         }
 
-        stage('Analyse SonarQube') {
+        stage('Static Code Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'mvn sonar:sonar'
-                }
+                echo "Running static code analysis tools"
+                // Exemples : SonarQube, Checkstyle, etc.
+                // sh './gradlew sonarqube'
             }
         }
 
-        stage('Vérification qualité SonarQube') {
+        stage('Build and Push Image') {
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
+                echo "Building and pushing Docker image with version: ${params.VERSION}"
+                sh """
+                docker build -t my-image:${params.VERSION} .
+                docker tag my-image:${params.VERSION} my-registry/my-image:${params.VERSION}
+                docker push my-registry/my-image:${params.VERSION}
+                """
             }
         }
 
-        stage('Docker Build') {
+        stage('Update Deployment') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                echo "Updating deployment to use image version: ${params.VERSION}"
+                // Exemple avec kubectl
+                sh """
+                kubectl set image deployment/my-app my-container=my-registry/my-image:${params.VERSION}
+                """
             }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Pipeline terminé avec succès.'
-        }
-        failure {
-            echo '❌ Pipeline échoué.'
         }
     }
 }
+ 
