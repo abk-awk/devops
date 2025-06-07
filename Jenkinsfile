@@ -15,8 +15,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Performing additional checkout operations if needed"
-                // Exemple : checkout depuis un autre repo
-                // git url: 'https://github.com/example/another-repo.git'
             }
         }
 
@@ -30,30 +28,35 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 echo "Running static code analysis tools"
-                // Exemple : SonarQube ou Checkstyle
-                // sh './gradlew sonarqube'
+                // Ex: sh './gradlew sonarqube'
             }
         }
 
         stage('Build and Push Image') {
             steps {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
-                sh """
-                    docker build -t my-image:${params.VERSION} .
-                    docker tag my-image:${params.VERSION} my-registry/my-image:${params.VERSION}
-                    docker push my-registry/my-image:${params.VERSION}
-                """
+
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                        docker build -t $DOCKER_USER/devops:$VERSION .
+                        docker push $DOCKER_USER/devops:$VERSION
+                    '''
+                }
             }
         }
 
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Exemple avec kubectl
-                sh """
-                    kubectl set image deployment/my-app my-container=my-registry/my-image:${params.VERSION}
-                """
+                // Exemple : sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
             }
         }
     }
 }
+ 
