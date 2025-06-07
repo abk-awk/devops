@@ -5,3 +5,18 @@
  * Learn more about Gradle by exploring our samples at https://docs.gradle.org/7.6.5/samples
  * This project uses @Incubating APIs which are subject to change.
  */
+
+
+plugins {
+    id 'java'
+    id 'org.sonarqube' version '4.4.1.3373'  // ⚠️ à vérifier selon ta version de Gradle
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "devops"
+        property "sonar.organization", "ton_organisation_sonar" // facultatif si SonarQube local
+        property "sonar.host.url", "http://172.16.23.165:9000"      // ou l’URL de ton serveur SonarQube
+        property "sonar.login", "${System.getenv("Sonarqube")}"  // Injecté par Jenkins
+    }
+}
