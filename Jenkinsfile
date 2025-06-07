@@ -25,10 +25,18 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo "Running SonarQube analysis..."
+                withSonarQubeEnv('Sonarqube') { // Ce nom doit correspondre à ta config Jenkins
+                    sh './gradlew sonarqube'
+                }
+            }
+        }
+
         stage('Static Code Analysis') {
             steps {
-                echo "Running static code analysis tools"
-                // Exemple : sh './gradlew sonarqube'
+                echo "Placeholder: Static analysis step (optional if Sonar used)"
             }
         }
 
@@ -43,7 +51,6 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-
                         docker build -t $DOCKER_USER/devops:$VERSION .
                         docker push $DOCKER_USER/devops:$VERSION
                     '''
