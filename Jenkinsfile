@@ -28,7 +28,7 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 echo "Running static code analysis tools"
-                // Ex: sh './gradlew sonarqube'
+                // Exemple : sh './gradlew sonarqube'
             }
         }
 
@@ -37,7 +37,7 @@ pipeline {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
 
                 withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-creds',
+                    credentialsId: 'DokcerHub Token',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
