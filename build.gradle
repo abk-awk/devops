@@ -1,7 +1,26 @@
+
 plugins {
     id 'java'
     id 'org.sonarqube' version '4.4.1.3373'
+    id 'jacoco' // (optionnel si tu veux la couverture de code)
 }
+
+group = 'com.devops'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+}
+
+test {
+    useJUnitPlatform() // Active JUnit 5
+}
+
 
 sonarqube {
     properties {
