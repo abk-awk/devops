@@ -20,17 +20,17 @@ pipeline {
             }
         }
 
-        stage('Build and Test') {
+        stage('Build') {
             steps {
-                echo "Building the project and running tests..."
-                sh './gradlew build test' // ou 'mvn test', etc.
+                echo "Building the project..."
+                sh './gradlew build'
             }
         }
 
         stage('Static Code Analysis') {
             steps {
                 echo "Running static code analysis tools"
-                // Exemples : SonarQube, Checkstyle, etc.
+                // Exemple : SonarQube ou Checkstyle
                 // sh './gradlew sonarqube'
             }
         }
@@ -39,9 +39,9 @@ pipeline {
             steps {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
                 sh """
-                docker build -t my-image:${params.VERSION} .
-                docker tag my-image:${params.VERSION} my-registry/my-image:${params.VERSION}
-                docker push my-registry/my-image:${params.VERSION}
+                    docker build -t my-image:${params.VERSION} .
+                    docker tag my-image:${params.VERSION} my-registry/my-image:${params.VERSION}
+                    docker push my-registry/my-image:${params.VERSION}
                 """
             }
         }
@@ -51,10 +51,9 @@ pipeline {
                 echo "Updating deployment to use image version: ${params.VERSION}"
                 // Exemple avec kubectl
                 sh """
-                kubectl set image deployment/my-app my-container=my-registry/my-image:${params.VERSION}
+                    kubectl set image deployment/my-app my-container=my-registry/my-image:${params.VERSION}
                 """
             }
         }
     }
 }
- 
