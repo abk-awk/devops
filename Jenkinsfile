@@ -29,7 +29,7 @@ pipeline {
             steps {
                 echo "Running SonarQube analysis..."
                 withSonarQubeEnv('Sonarqube') { // Ce nom doit correspondre à ta config Jenkins
-                    sh './gradlew sonarqube'
+                    sh './gradlew sonar'
                 }
             }
         }
