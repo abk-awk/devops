@@ -1,5 +1,3 @@
-cat > Dockerfile << 'EOF'
-FROM openjdk:21
-COPY target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
-EOF
+FROM alpine
+CMD ["echo", "Hello from Docker"]
+ 
