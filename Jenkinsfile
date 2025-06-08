@@ -46,7 +46,7 @@ pipeline {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
 
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-token', // ✅ Ton ID réel de Jenkins
+                    credentialsId: 'DokcerHub Token', // ✅ Ton ID réel de Jenkins
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -72,7 +72,7 @@ pipeline {
                 sh """
                     git checkout -B main
                     sed -i 's/tag: .*/tag: ${params.VERSION}/' helm/app/values.yaml
-                    git config user.email "jenkins@example.com"
+                    git config user.email "abel.kabangu@2025.icam.fr"
                     git config user.name "Jenkins CI"
                     git commit -am "Update Docker tag to ${params.VERSION}"
                     git push origin main
