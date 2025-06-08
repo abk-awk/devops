@@ -49,7 +49,7 @@ pipeline {
             steps {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
                 withCredentials([usernamePassword(
-                    credentialsId: 'DockerHub Token',
+                    credentialsId: 'DokcerHub Token',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -73,7 +73,7 @@ pipeline {
         stage('Update values.yaml') {
             steps {
                 echo "Updating Helm values.yaml with new Docker tag"
-                withCredentials([string(credentialsId: 'github-push-token', variable: 'GIT_TOKEN')]) {
+                withCredentials([string(credentialsId: 'JenkinsL', variable: 'GIT_TOKEN')]) {
                     sh """
                         git checkout -B main
                         git pull origin main
@@ -84,5 +84,12 @@ pipeline {
                         git config user.email "abel.kabangu@2025.icam.fr"
                         git config user.name "Jenkins CI"
 
-                        git commit -am "Update Docker imag
+                        git commit -am "Update Docker image and tag to ${DOCKER_IMAGE}:${params.VERSION}" || echo "Nothing to commit"
+                        git push https://abk-awk:${GIT_TOKEN}@github.com/abk-awk/devops.git main
+                    """
+                }
+            }
+        }
+    }
+}
  
