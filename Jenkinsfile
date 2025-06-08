@@ -28,7 +28,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube analysis..."
-                withSonarQubeEnv('Sonarqube') { // Nom de l'installation SonarQube dans Jenkins
+                withSonarQubeEnv('Sonarqube') {
                     sh './gradlew sonar'
                 }
             }
@@ -37,7 +37,6 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 echo "Running optional static code analysis step"
-                // Intégré à Sonar, ce stage peut être enrichi si nécessaire
             }
         }
 
@@ -46,7 +45,7 @@ pipeline {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
 
                 withCredentials([usernamePassword(
-                    credentialsId: 'DockerHub Token', // Attention au nom exact
+                    credentialsId: 'DokcerHub Token', // <-- On garde volontairement la faute car elle existe dans Jenkins
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -62,7 +61,7 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Exemple : sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
+                // Ex: sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
             }
         }
 
