@@ -9,13 +9,13 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 checkout scm
-                sh 'git checkout -B main'
             }
         }
 
         stage('Checkout') {
             steps {
                 echo "Performing additional checkout operations if needed"
+                sh 'git checkout -B main'
             }
         }
 
@@ -45,7 +45,7 @@ pipeline {
             steps {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
                 withCredentials([usernamePassword(
-                    credentialsId: 'DockerHub Token',
+                    credentialsId: 'DokcerHub Token',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -61,7 +61,7 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Exemple de déploiement : sh "kubectl set image ..."
+                // Ex: sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
             }
         }
 
@@ -69,13 +69,14 @@ pipeline {
             steps {
                 echo "Updating Helm values.yaml with new Docker tag"
                 withCredentials([usernamePassword(
-                    credentialsId: 'github-creds',
+                    credentialsId: 'JenkinsL',
                     usernameVariable: 'GIT_USER',
                     passwordVariable: 'GIT_TOKEN'
                 )]) {
                     sh '''
                         git checkout -B main
-                        sed -i 's/tag: .*/tag: ''' + "${VERSION}" + '''/' helm/app/values.yaml
+                        git pull --rebase https://$GIT_USER:$GIT_TOKEN@github.com/abk-awk/devops.git main || true
+                        sed -i 's/tag: .*/tag: ${VERSION}/' helm/app/values.yaml
                         git config user.email "abel.kabangu@2025.icam.fr"
                         git config user.name "Jenkins CI"
                         git diff --quiet || git commit -am "Update Docker tag to ${VERSION}"
