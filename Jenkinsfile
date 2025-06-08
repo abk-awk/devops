@@ -5,17 +5,21 @@ pipeline {
         string(name: 'VERSION', defaultValue: 'v1.0', description: 'Version to build and deploy')
     }
 
+    environment {
+        DOCKER_IMAGE = 'abel025/devops'
+    }
+
     stages {
         stage('Checkout SCM') {
             steps {
                 checkout scm
+                sh 'git checkout -B main'
             }
         }
 
         stage('Checkout') {
             steps {
                 echo "Performing additional checkout operations if needed"
-                sh 'git checkout -B main'
             }
         }
 
@@ -45,7 +49,7 @@ pipeline {
             steps {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
                 withCredentials([usernamePassword(
-                    credentialsId: 'DokcerHub Token',
+                    credentialsId: 'DockerHub Token',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -61,30 +65,24 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Ex: sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
+                // Exemple de commande :
+                // sh "kubectl set image deployment/my-app my-container=$DOCKER_IMAGE:$VERSION"
             }
         }
 
         stage('Update values.yaml') {
             steps {
                 echo "Updating Helm values.yaml with new Docker tag"
-                withCredentials([usernamePassword(
-                    credentialsId: 'JenkinsL',
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_TOKEN'
-                )]) {
-                    sh '''
+                withCredentials([string(credentialsId: 'github-push-token', variable: 'GIT_TOKEN')]) {
+                    sh """
                         git checkout -B main
-                        git pull --rebase https://$GIT_USER:$GIT_TOKEN@github.com/abk-awk/devops.git main || true
-                        sed -i 's/tag: .*/tag: ${VERSION}/' helm/app/values.yaml
+                        git pull origin main
+
+                        sed -i 's|name:.*|name: ${DOCKER_IMAGE}|' helm/app/values.yaml
+                        sed -i 's|tag:.*|tag: ${params.VERSION}|' helm/app/values.yaml
+
                         git config user.email "abel.kabangu@2025.icam.fr"
                         git config user.name "Jenkins CI"
-                        git diff --quiet || git commit -am "Update Docker tag to ${VERSION}"
-                        git push https://$GIT_USER:$GIT_TOKEN@github.com/abk-awk/devops.git main
-                    '''
-                }
-            }
-        }
-    }
-}
+
+                        git commit -am "Update Docker imag
  
