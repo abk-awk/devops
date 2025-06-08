@@ -9,7 +9,6 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 checkout scm
-                // Corrige l'état détaché
                 sh 'git checkout -B main'
             }
         }
@@ -45,9 +44,8 @@ pipeline {
         stage('Build and Push Image') {
             steps {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
-
                 withCredentials([usernamePassword(
-                    credentialsId: 'DokcerHub Token', // corrige ici le bon ID
+                    credentialsId: 'DockerHub Token',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -63,8 +61,7 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Exemple de commande kubectl si nécessaire
-                // sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
+                // Exemple de déploiement : sh "kubectl set image ..."
             }
         }
 
@@ -72,18 +69,18 @@ pipeline {
             steps {
                 echo "Updating Helm values.yaml with new Docker tag"
                 withCredentials([usernamePassword(
-                    credentialsId: 'JenkinsL', // ID des credentials GitHub PAT
+                    credentialsId: 'github-creds',
                     usernameVariable: 'GIT_USER',
                     passwordVariable: 'GIT_TOKEN'
                 )]) {
-                    sh """
+                    sh '''
                         git checkout -B main
-                        sed -i 's/tag: .*/tag: ${params.VERSION}/' helm/app/values.yaml
+                        sed -i 's/tag: .*/tag: ''' + "${VERSION}" + '''/' helm/app/values.yaml
                         git config user.email "abel.kabangu@2025.icam.fr"
                         git config user.name "Jenkins CI"
-                        git commit -am "Update Docker tag to ${params.VERSION}"
+                        git diff --quiet || git commit -am "Update Docker tag to ${VERSION}"
                         git push https://$GIT_USER:$GIT_TOKEN@github.com/abk-awk/devops.git main
-                    """
+                    '''
                 }
             }
         }
