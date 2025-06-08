@@ -9,6 +9,7 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 checkout scm
+                sh 'git checkout -B main'
             }
         }
 
@@ -45,7 +46,7 @@ pipeline {
                 echo "Building and pushing Docker image with version: ${params.VERSION}"
 
                 withCredentials([usernamePassword(
-                    credentialsId: 'DokcerHub Token', // <-- On garde volontairement la faute car elle existe dans Jenkins
+                    credentialsId: 'dockerhub-token', // ✅ Ton ID réel de Jenkins
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -61,7 +62,7 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Ex: sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
+                // Ex. : sh "kubectl set image deployment/my-app my-container=$DOCKER_USER/devops:$VERSION"
             }
         }
 
@@ -69,6 +70,7 @@ pipeline {
             steps {
                 echo "Updating Helm values.yaml with new Docker tag"
                 sh """
+                    git checkout -B main
                     sed -i 's/tag: .*/tag: ${params.VERSION}/' helm/app/values.yaml
                     git config user.email "jenkins@example.com"
                     git config user.name "Jenkins CI"
