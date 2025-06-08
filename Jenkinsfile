@@ -10,6 +10,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout SCM') {
             steps {
                 checkout scm
@@ -55,8 +56,8 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker build -t $DOCKER_USER/devops:$VERSION .
-                        docker push $DOCKER_USER/devops:$VERSION
+                        docker build -t $DOCKER_USER/devops:${VERSION} .
+                        docker push $DOCKER_USER/devops:${VERSION}
                     '''
                 }
             }
@@ -65,8 +66,6 @@ pipeline {
         stage('Update Deployment') {
             steps {
                 echo "Updating deployment to use image version: ${params.VERSION}"
-                // Exemple de commande :
-                // sh "kubectl set image deployment/my-app my-container=$DOCKER_IMAGE:$VERSION"
             }
         }
 
@@ -76,16 +75,13 @@ pipeline {
                 withCredentials([string(credentialsId: 'JenkinsL', variable: 'GIT_TOKEN')]) {
                     sh """
                         git checkout -B main
-                        git pull origin main
-
-                        sed -i 's|name:.*|name: ${DOCKER_IMAGE}|' helm/app/values.yaml
-                        sed -i 's|tag:.*|tag: ${params.VERSION}|' helm/app/values.yaml
-
+                        sed -i 's|repository:.*|repository: abel025/devops|' helm/app/values.yaml
+                        sed -i 's|tag:.*|tag: ${VERSION}|' helm/app/values.yaml
                         git config user.email "abel.kabangu@2025.icam.fr"
                         git config user.name "Jenkins CI"
-
-                        git commit -am "Update Docker image and tag to ${DOCKER_IMAGE}:${params.VERSION}" || echo "Nothing to commit"
-                        git push https://abk-awk:${GIT_TOKEN}@github.com/abk-awk/devops.git main
+                        git pull https://$GIT_TOKEN@github.com/abk-awk/devops.git main
+                        git commit -am "Update Docker tag to ${VERSION}" || echo "Nothing to commit"
+                        git push https://$GIT_TOKEN@github.com/abk-awk/devops.git main
                     """
                 }
             }
