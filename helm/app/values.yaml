@@ -1,0 +1,6 @@
+image:
+  repository: abel025/devops
+  tag: v1.0  # ← Ceci est la balise Docker à mettre à jour automatiquement
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
