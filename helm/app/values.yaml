@@ -1,6 +1,6 @@
 image:
   repository: abel025/devops
-  tag: v1.0
+  tag: ${VERSION}
   pullPolicy: IfNotPresent
 
 replicaCount: 1
