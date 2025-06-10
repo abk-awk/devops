@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DemoApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(DemoApplication.class);
+
     @GetMapping("/")
     public String index(final Model model) {
 
@@ -30,7 +31,10 @@ public class DemoApplication {
         logger.info("INFO level log message");
         logger.debug("DEBUG level log message");
         logger.error("ERROR level log message");
+
+        // Ligne ajoutée comme demandé :
         model.addAttribute("title", "This is a Spring Boot demo app version v2.0");
+
         model.addAttribute("msg", "Implemented using DevOps.");
         return "index";
     }
@@ -40,3 +44,4 @@ public class DemoApplication {
     }
 
 }
+ 
