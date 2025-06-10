@@ -1,23 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.appName }}-deployment"
-  namespace: "{{ .Values.namespace }}"
+  name: {{ include "demo-java-app.fullname" . }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: "{{ .Values.appName }}"
+    app: {{ .Values.appName }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: "{{ .Values.appName }}"
+      app: {{ .Values.appName }}
   template:
     metadata:
       labels:
-        app: "{{ .Values.appName }}"
+        app: {{ .Values.appName }}
+        {{- with .Values.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
     spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "demo-java-app.serviceAccountName" .) }}
       containers:
-        - name: "{{ .Values.appName }}"
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.githubID }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
+              name: http
+          livenessProbe: {{ toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe: {{ toYaml .Values.readinessProbe | nindent 12 }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          volumeMounts: {{ toYaml .Values.volumeMounts | nindent 12 }}
+      volumes: {{ toYaml .Values.volumes | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
  
