@@ -4,14 +4,11 @@ image:
   githubID: deepakkr35
   repository: demo-java-app
   pullPolicy: IfNotPresent
-  tag: latest  # ✅ TAG corrigé ici
+  tag: "latest"  # Remplacer par une version précise si souhaité
 
 appName: demo-java-app
 
 namespace: app
-
-kibanaService: "kibana-service:5601"
-esService: "es-master-service:9200"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -27,39 +24,24 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext: {}
+
 securityContext: {}
 
 service:
   type: ClusterIP
   port: 80
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-
-resources: {}
-
 livenessProbe:
   httpGet:
     path: /
     port: http
+
 readinessProbe:
   httpGet:
     path: /
     port: http
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
+resources: {}
 
 volumes: []
 volumeMounts: []
